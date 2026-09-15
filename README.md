@@ -20,6 +20,29 @@ python app.py
 
 실행 후 브라우저에서 http://localhost:5100 으로 접속합니다.
 
+## 데이터베이스
+
+`DATABASE_URL` / `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING` 중 먼저 발견되는 환경변수가 있으면 해당
+Postgres에, 없으면 로컬 `data/payroll.db`(SQLite)로 접속합니다. 로컬 개발은 별도 설정 없이 SQLite로
+바로 동작합니다.
+
+**Vercel 배포 시에는 위 환경변수 중 하나를 반드시 설정해야 합니다.** Vercel 서버리스 함수는 프로젝트
+디렉터리가 읽기 전용이고 `/tmp`만 쓰기 가능한데, `/tmp`는 인스턴스가 재시작되면 초기화되는 임시
+저장소라서 Postgres 접속 정보 없이는 계정·검증 이력이 수시로 사라집니다(SQLite `/tmp` 폴백은 데모용
+최후 수단이며, 설정을 빠뜨리면 Vercel 함수 로그에 경고가 출력됩니다).
+
+1. 셋 중 아무거나로 무료 Postgres 인스턴스를 생성합니다.
+   - **Vercel Postgres**(프로젝트 → Storage 탭 → Create Database → Connect Project) — 같은 Vercel
+     계정으로 새 가입 없이 바로 생성 가능하고, 연결 시 `POSTGRES_URL` 계열 환경변수를 자동으로
+     프로젝트에 주입해줘 별도 설정이 필요 없습니다. **권장 경로**.
+   - [Neon](https://neon.tech), [Supabase](https://supabase.com) — 가입 후 발급되는 연결 문자열
+     (`postgresql://...`)을 Vercel 프로젝트 → Settings → Environment Variables에 `DATABASE_URL`로
+     직접 등록합니다.
+2. 재배포하면 `app.py`가 시작 시 `db.create_all()`과 시드(`seed_rules`/`seed_users`)를 그 Postgres에 대해
+   실행합니다. 이후 인스턴스가 재시작돼도 데이터가 유지됩니다.
+3. 서버리스 환경에서는 매 요청마다 커넥션을 새로 열고 즉시 반납하도록(`NullPool`) 이미 구성되어 있어
+   커넥션 풀 관련 오류(`connection closed`, `too many connections` 등)를 신경 쓰지 않아도 됩니다.
+
 ## 로그인
 
 Flask-Login 기반 세션 인증이 적용되어 있습니다. 관리자만 `기준 관리`(요율 개정)에 접근할 수 있고,
