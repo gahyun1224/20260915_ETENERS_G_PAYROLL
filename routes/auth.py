@@ -15,7 +15,7 @@ def login():
         if user and user.active and user.check_password(password):
             login_user(user)
             next_url = request.args.get("next")
-            return redirect(next_url or url_for("dashboard.index"))
+            return redirect(next_url or url_for("upload.upload_form"))
         flash("아이디 또는 비밀번호가 올바르지 않습니다.", "danger")
     return render_template("login.html")
 
