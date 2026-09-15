@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}기준 관리 — Payroll Guard{% endblock %}
+{% block content %}
+<h4 class="mb-3">기준 관리 — 국민연금</h4>
+
+<div class="pg-card mb-4">
+  <div class="fw-semibold mb-3">신규 기준 등록 (개정)</div>
+  <form method="post" class="row g-2">
+    <div class="col-md-2">
+      <label class="form-label small">시행일</label>
+      <input type="date" name="effective_start" class="form-control form-control-sm" required>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">근로자 부담률(%)</label>
+      <input type="number" step="0.001" name="employee_rate" class="form-control form-control-sm" required>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">하한액(원)</label>
+      <input type="number" name="lower_limit" class="form-control form-control-sm" required>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label small">상한액(원)</label>
+      <input type="number" name="upper_limit" class="form-control form-control-sm" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">법적 근거</label>
+      <input type="text" name="legal_basis" class="form-control form-control-sm" placeholder="예: 국민연금법 제88조">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">출처</label>
+      <input type="text" name="source_name" class="form-control form-control-sm" placeholder="예: 국민연금공단">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">출처 URL</label>
+      <input type="url" name="source_url" class="form-control form-control-sm">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small">설명</label>
+      <input type="text" name="description" class="form-control form-control-sm">
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary btn-sm mt-2">기준 등록 (이전 기준 자동 마감)</button>
+    </div>
+  </form>
+</div>
+
+<div class="pg-card">
+  <div class="fw-semibold mb-3">기준 변경 이력</div>
+  <div class="table-responsive">
+    <table class="table pg-table">
+      <thead>
+        <tr>
+          <th>보험종류</th><th>적용기간</th><th class="text-end">근로자 부담률</th>
+          <th class="text-end">하한액</th><th class="text-end">상한액</th><th>법적 근거</th><th>현재적용</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rules %}
+        <tr>
+          <td>국민연금</td>
+          <td>{{ r.effective_start }} ~ {{ r.effective_end or '현재' }}</td>
+          <td class="text-end">{{ (r.employee_rate * 100) | round(3) }}%</td>
+          <td class="text-end">{{ "{:,.0f}".format(r.lower_limit) }}</td>
+          <td class="text-end">{{ "{:,.0f}".format(r.upper_limit) }}</td>
+          <td class="small">{{ r.legal_basis }}</td>
+          <td>{{ '✅' if r.is_current else '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

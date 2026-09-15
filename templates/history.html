@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}검증 이력 — Payroll Guard{% endblock %}
+{% block content %}
+<h4 class="mb-3">검증 이력</h4>
+
+<div class="pg-card">
+  <div class="table-responsive">
+    <table class="table pg-table">
+      <thead>
+        <tr>
+          <th>검증일시</th><th>파일명</th><th class="text-end">인원</th>
+          <th class="text-end">정상</th><th class="text-end">오류</th><th class="text-end">추가확인</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in batches %}
+        <tr>
+          <td>{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{{ b.file_name }} <span class="text-muted small">({{ b.reference_month }})</span></td>
+          <td class="text-end">{{ b.total_count }}</td>
+          <td class="text-end">{{ b.normal_count }}</td>
+          <td class="text-end">{{ b.error_count }}</td>
+          <td class="text-end">{{ b.review_count }}</td>
+          <td><a href="{{ url_for('dashboard.view_batch', batch_id=b.id) }}" class="btn btn-sm btn-outline-primary">결과 보기</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">검증 이력이 없습니다.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

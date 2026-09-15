@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ result.employee_name }} 상세 — Payroll Guard{% endblock %}
+{% block content %}
+
+{% set detail = result.detail %}
+
+<a href="{{ url_for('dashboard.view_batch', batch_id=result.batch_id) }}" class="small">&larr; 대시보드로 돌아가기</a>
+
+<div class="d-flex justify-content-between align-items-start mt-2 mb-4">
+  <div>
+    <h4 class="mb-1">{{ result.employee_id }} {{ result.employee_name }}</h4>
+    <div class="text-muted small">기준연월 {{ result.batch.reference_month }} · 보험: 국민연금</div>
+  </div>
+  <div>
+    {% if result.status == 'NORMAL' %}<span class="pg-badge pg-badge-normal fs-6">정상</span>
+    {% elif result.status == 'ERROR' %}<span class="pg-badge pg-badge-error fs-6">오류</span>
+    {% else %}<span class="pg-badge pg-badge-review fs-6">추가 확인</span>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="pg-card h-100">
+      <div class="fw-semibold mb-3">검증 결과</div>
+      <p style="white-space: pre-line;">{{ detail.message }}</p>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="pg-card h-100">
+      <div class="fw-semibold mb-3">검증 과정</div>
+      {% for step in detail.steps %}
+      <div class="pg-step state-{{ step.state }}">
+        {{ '✓' if step.state == 'ok' else '⚠' }} {{ step.label }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-md-6">
+    <div class="pg-card h-100">
+      <div class="fw-semibold mb-3">담당자 입력값</div>
+      <table class="table table-sm mb-0">
+        <tbody>
+          <tr><td class="text-muted">국민연금 가입상태</td><td class="text-end">{{ detail.np_status }}</td></tr>
+          <tr><td class="text-muted">담당자 적용 기준소득월액</td><td class="text-end">{{ "{:,.0f}".format(result.input_base) }}원</td></tr>
+          <tr><td class="text-muted">담당자 공제액</td><td class="text-end fw-semibold">{{ "{:,.0f}".format(result.input_deduction) }}원</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="pg-card h-100">
+      <div class="fw-semibold mb-3">시스템 검증</div>
+      <table class="table table-sm mb-0">
+        <tbody>
+          {% if detail.evidence %}
+          <tr><td class="text-muted">적용 상한</td><td class="text-end">{{ "{:,.0f}".format(detail.evidence.upper_limit) }}원</td></tr>
+          <tr><td class="text-muted">적용 근로자 부담률</td><td class="text-end">{{ (detail.evidence.employee_rate * 100) | round(3) }}%</td></tr>
+          {% endif %}
+          <tr><td class="text-muted">시스템 적용 기준소득월액</td><td class="text-end">{{ "{:,.0f}".format(result.verified_base) if result.verified_base is not none else '-' }}원</td></tr>
+          <tr><td class="text-muted">시스템 검증액</td><td class="text-end fw-semibold">{{ "{:,.0f}".format(result.verified_deduction) if result.verified_deduction is not none else '-' }}원</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if result.difference is not none %}
+<div class="pg-card mt-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <span class="fw-semibold">차액</span>
+    <span class="fs-5 {{ 'text-danger' if result.difference != 0 else 'text-success' }}">
+      {{ "{:+,.0f}".format(result.difference) }}원
+    </span>
+  </div>
+</div>
+{% endif %}
+
+{% if detail.evidence %}
+<div class="pg-card mt-3">
+  <div class="fw-semibold mb-2">관련 기준 및 근거</div>
+  <div class="small text-muted mb-1">{{ detail.evidence.category }}</div>
+  <table class="table table-sm mb-2">
+    <tbody>
+      <tr><td class="text-muted" style="width:220px;">근로자 부담률</td><td>{{ (detail.evidence.employee_rate * 100) | round(3) }}%</td></tr>
+      <tr><td class="text-muted">기준소득월액 적용 범위</td><td>{{ "{:,.0f}".format(detail.evidence.lower_limit) }}원 ~ {{ "{:,.0f}".format(detail.evidence.upper_limit) }}원</td></tr>
+      <tr><td class="text-muted">적용기간</td><td>{{ detail.evidence.effective_start }} ~ {{ detail.evidence.effective_end or '' }}</td></tr>
+      <tr><td class="text-muted">법적 근거</td><td>{{ detail.evidence.legal_basis }}</td></tr>
+      <tr><td class="text-muted">출처</td><td>{{ detail.evidence.source_name }}</td></tr>
+    </tbody>
+  </table>
+  {% if detail.evidence.source_url %}
+  <a href="{{ detail.evidence.source_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">공식 근거 확인</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

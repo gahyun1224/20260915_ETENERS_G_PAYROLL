@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}급여 검증 — Payroll Guard{% endblock %}
+{% block content %}
+<h4 class="mb-1">급여 데이터 업로드</h4>
+<p class="text-muted mb-4">검증할 급여 Excel 파일을 업로드해주세요. 여러 직원의 데이터를 한 번에 일괄 검증합니다.</p>
+
+<form method="post" enctype="multipart/form-data" id="uploadForm">
+  <div class="pg-upload-drop" id="dropZone">
+    <div id="dropIdle">
+      <div style="font-size:2rem;">📄</div>
+      <div class="fw-semibold mt-2">급여 데이터 업로드</div>
+      <div class="text-muted small mt-1">검증할 급여 Excel(.xlsx) 파일을 업로드해주세요.</div>
+      <div class="text-muted small">또는 파일을 이곳에 끌어다 놓으세요.</div>
+      <button type="button" class="btn btn-primary mt-3" id="pickFileBtn">파일 선택</button>
+      <input type="file" name="payroll_file" id="fileInput" accept=".xlsx" class="d-none" required>
+    </div>
+    <div id="dropSelected" class="d-none">
+      <div style="font-size:1.6rem;">✅</div>
+      <div class="fw-semibold mt-2">파일 확인 완료</div>
+      <div class="mt-1" id="selectedFileName"></div>
+      <button type="submit" class="btn btn-primary mt-3" id="submitBtn">일괄 검증 시작</button>
+    </div>
+  </div>
+
+  <div id="progressWrap" class="mt-3 d-none">
+    <div class="small text-muted mb-1">급여 데이터를 검증하고 있습니다...</div>
+    <div class="progress" style="height: 10px;">
+      <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    </div>
+  </div>
+</form>
+
+<div class="pg-card mt-4">
+  <div class="fw-semibold mb-2">업로드 양식 안내</div>
+  <ul class="small text-muted mb-0">
+    <li>필수 컬럼: 사번, 성명, 생년월일, 기준연월, 국민연금 가입상태, 국민연금 신고소득월액, 담당자 적용 기준소득월액, 국민연금 공제액</li>
+    <li>선택 컬럼(향후 확장용): 입사일, 퇴사일, 건강보험/장기요양보험/고용보험 관련 컬럼</li>
+    <li>지원 형식: .xlsx</li>
+  </ul>
+</div>
+
+<div class="alert alert-secondary mt-3 small mb-0">
+  본 MVP는 시연용 데이터 기반으로 제작되었습니다. 실제 개인정보 및 급여정보를 업로드하지 마세요.
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const dropIdle = document.getElementById('dropIdle');
+const dropSelected = document.getElementById('dropSelected');
+const selectedFileName = document.getElementById('selectedFileName');
+const pickFileBtn = document.getElementById('pickFileBtn');
+const uploadForm = document.getElementById('uploadForm');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+
+pickFileBtn.addEventListener('click', () => fileInput.click());
+
+function showSelected(file) {
+  dropIdle.classList.add('d-none');
+  dropSelected.classList.remove('d-none');
+  selectedFileName.textContent = file.name;
+}
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) showSelected(fileInput.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(evt =>
+  dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); })
+);
+['dragleave', 'drop'].forEach(evt =>
+  dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); })
+);
+dropZone.addEventListener('drop', e => {
+  const files = e.dataTransfer.files;
+  if (files.length) {
+    fileInput.files = files;
+    showSelected(files[0]);
+  }
+});
+
+uploadForm.addEventListener('submit', () => {
+  progressWrap.classList.remove('d-none');
+  let pct = 0;
+  const timer = setInterval(() => {
+    pct = Math.min(pct + 12, 92);
+    progressBar.style.width = pct + '%';
+    if (pct >= 92) clearInterval(timer);
+  }, 150);
+});
+</script>
+{% endblock %}
