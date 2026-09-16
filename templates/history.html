@@ -21,7 +21,15 @@
           <td class="text-end">{{ b.normal_count }}</td>
           <td class="text-end">{{ b.error_count }}</td>
           <td class="text-end">{{ b.review_count }}</td>
-          <td><a href="{{ url_for('dashboard.view_batch', batch_id=b.id) }}" class="btn btn-sm btn-outline-primary">결과 보기</a></td>
+          <td class="d-flex gap-2">
+            <a href="{{ url_for('dashboard.view_batch', batch_id=b.id) }}" class="btn btn-sm btn-outline-primary">결과 보기</a>
+            {% if current_user.is_admin %}
+            <form method="post" action="{{ url_for('history.delete_batch', batch_id=b.id) }}"
+                  onsubmit="return confirm('{{ b.file_name }} 배치와 그 검증 결과 {{ b.total_count }}건을 삭제할까요? 되돌릴 수 없습니다.');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+            </form>
+            {% endif %}
+          </td>
         </tr>
         {% else %}
         <tr><td colspan="7" class="text-center text-muted py-4">검증 이력이 없습니다.</td></tr>

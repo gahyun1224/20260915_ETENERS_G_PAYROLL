@@ -18,5 +18,9 @@ class Batch(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     results = db.relationship(
-        "ValidationResult", backref="batch", order_by="ValidationResult.id", lazy=True
+        "ValidationResult",
+        backref="batch",
+        order_by="ValidationResult.id",
+        lazy=True,
+        cascade="all, delete-orphan",
     )
