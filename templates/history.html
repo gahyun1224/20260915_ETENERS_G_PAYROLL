@@ -21,14 +21,7 @@
           <td class="text-end">{{ b.normal_count }}</td>
           <td class="text-end">{{ b.error_count }}</td>
           <td class="text-end">{{ b.review_count }}</td>
-          <td class="d-flex gap-2">
-            <a href="{{ url_for('dashboard.view_batch', batch_id=b.id) }}" class="btn btn-sm btn-outline-primary">결과 보기</a>
-            {% if current_user.is_admin %}
-            <form id="deleteForm{{ b.id }}" method="post" action="{{ url_for('history.delete_batch', batch_id=b.id) }}"></form>
-            <button type="button" class="btn btn-sm btn-outline-danger"
-                    onclick='pgConfirmDeleteBatch("deleteForm{{ b.id }}", {{ b.file_name | tojson }}, {{ b.total_count }})'>삭제</button>
-            {% endif %}
-          </td>
+          <td><a href="{{ url_for('dashboard.view_batch', batch_id=b.id) }}" class="btn btn-sm btn-outline-primary">결과 보기</a></td>
         </tr>
         {% else %}
         <tr><td colspan="7" class="text-center text-muted py-4">검증 이력이 없습니다.</td></tr>
@@ -37,35 +30,4 @@
     </table>
   </div>
 </div>
-
-<div class="modal fade" id="pgDeleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">배치 삭제</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
-      <div class="modal-body">
-        <p id="pgDeleteModalText" class="mb-0"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" id="pgDeleteModalConfirm" class="btn btn-danger">삭제</button>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-  function pgConfirmDeleteBatch(formId, fileName, totalCount) {
-    document.getElementById('pgDeleteModalText').textContent =
-      fileName + ' 배치와 그 검증 결과 ' + totalCount + '건을 삭제할까요? 되돌릴 수 없습니다.';
-    document.getElementById('pgDeleteModalConfirm').onclick = function () {
-      document.getElementById(formId).submit();
-    };
-    new bootstrap.Modal(document.getElementById('pgDeleteModal')).show();
-  }
-</script>
 {% endblock %}
