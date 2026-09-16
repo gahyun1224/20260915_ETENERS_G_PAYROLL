@@ -22,6 +22,7 @@
         {% if current_user.is_admin %}
         <a class="nav-link" href="{{ url_for('rules.index') }}">기준 관리</a>
         {% endif %}
+        <a class="nav-link" href="{{ url_for('analysis.index') }}">원인분석</a>
       </div>
       <span class="navbar-text me-3 small">{{ current_user.name }}님 ({{ '관리자' if current_user.is_admin else '담당자' }})</span>
       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.logout') }}">로그아웃</a>

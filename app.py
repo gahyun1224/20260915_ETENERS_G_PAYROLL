@@ -23,13 +23,14 @@ def create_app(config_overrides=None):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from routes import auth, dashboard, history, rules, upload
+    from routes import analysis, auth, dashboard, history, rules, upload
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(upload.bp)
     app.register_blueprint(history.bp)
     app.register_blueprint(rules.bp)
+    app.register_blueprint(analysis.bp)
 
     with app.app_context():
         db.create_all()

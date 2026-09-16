@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}원인분석 — Payroll Guard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-end mb-3">
+  <div>
+    <h4 class="mb-1">오류·추가확인 원인분석</h4>
+    <div class="text-muted small">누적된 모든 검증 이력 기준 — 새 배치가 쌓일수록 자동으로 갱신됩니다.</div>
+  </div>
+</div>
+
+{% if total == 0 %}
+<div class="pg-card text-center py-5">
+  <div style="font-size:2rem;">📊</div>
+  <h5 class="mt-2">아직 분석할 오류·추가확인 데이터가 없습니다</h5>
+  <p class="text-muted">급여 검증에서 오류 또는 추가 확인이 발생하면 이 화면에 원인별 비율이 표시됩니다.</p>
+</div>
+{% else %}
+
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="pg-card h-100 d-flex align-items-center justify-content-center">
+      <canvas id="causeChart" width="280" height="280"></canvas>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="pg-card h-100">
+      <div class="fw-semibold mb-2">원인별 비율 (오류 {{ total }}건 기준)</div>
+      <table class="table pg-table mb-0">
+        <thead>
+          <tr><th></th><th>오류 유형</th><th class="text-end">건수</th><th class="text-end">비율</th></tr>
+        </thead>
+        <tbody>
+          {% for c in causes %}
+          <tr>
+            <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ c.color }};"></span></td>
+            <td>{{ c.label }}</td>
+            <td class="text-end">{{ c.count }}건</td>
+            <td class="text-end fw-semibold">{{ c.percentage }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if total > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  new Chart(document.getElementById('causeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: [{% for c in causes %}{{ c.label | tojson }},{% endfor %}],
+      datasets: [{
+        data: [{% for c in causes %}{{ c.count }},{% endfor %}],
+        backgroundColor: [{% for c in causes %}{{ c.color | tojson }},{% endfor %}],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const pct = [{% for c in causes %}{{ c.percentage }},{% endfor %}][ctx.dataIndex];
+              return `${ctx.label}: ${ctx.raw}건 (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}
